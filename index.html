@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kulturmischpult</title>
+<style>
+/* =====================================================================
+   Grundfarben & Themes (iteratec-Farbschema)
+   iteragenta #9D1681 · Gelb #FFE500 · Mint #00B2BB
+   Hell ist Standard, Dunkel folgt der Systemeinstellung oder dem Umschalter.
+   ===================================================================== */
+:root {
+  --bg: #f4f5f6;
+  --flaeche: #ffffff;
+  --text: #1d1d1f;
+  --text-2: #4d5056;
+  --linie: #d3d6da;
+  --linie-2: #e8eaed;
+  /* Oberfläche bewusst neutral: Farben stehen in der App ausschließlich für die vier Kulturtypen.
+     Die Marke zeigt sich über die Typfarben und den Dreifarbbalken unter dem Titel. */
+  --akzent: #1d1d1f;         /* Überschriften-Balken */
+  --fokus: #1d1d1f;
+  --ueberschrift: #1d1d1f;
+  --knopf: #ffffff;
+  --knopf-aktiv: #1d1d1f;
+  --knopf-aktiv-text: #ffffff;
+  /* Ist/Soll-Schiebeschalter */
+  --schalter-schiene: #c4c7cc;
+  --schalter-rand: transparent;
+  --schalter-knopf: linear-gradient(#ffffff, #e6e8eb);
+  --schatten: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.05);
+
+  /* Mischpult (folgt Hell/Dunkel) */
+  --pult-bg: #e4e6e9;
+  --pult-kanal: #ffffff;
+  --pult-text: #1d1d1f;
+  --pult-text-2: #5a5d63;
+  --pult-schlitz: #c4c7cc;
+  --pult-schlitz-schatten: inset 0 1px 2px rgba(0,0,0,.25);
+  --pult-zone: rgba(0,0,0,.22);
+  --pult-schatten: inset 0 1px 0 rgba(255,255,255,.7), 0 4px 16px rgba(0,0,0,.08);
+  --kappe-verlauf: linear-gradient(#ffffff, #eceef1 45%, #dfe1e5 55%, #f4f5f7);
+  --kappe-rand: #9a9ea5;
+  --kappe-schatten: 0 2px 5px rgba(0,0,0,.25);
+
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121214; --flaeche: #1c1c1f; --text: #f0f0f2; --text-2: #b6b6bd;
+    --linie: #3c3c42; --linie-2: #28282c;
+    --akzent: #f0f0f2; --fokus: #f0f0f2; --ueberschrift: #f0f0f2;
+    --knopf: #252528; --knopf-aktiv: #f0f0f2; --knopf-aktiv-text: #121214;
+    --schalter-schiene: #3d3d43; --schalter-rand: #5f5f67; --schalter-knopf: linear-gradient(#f4f4f6, #cfcfd4);
+    --schatten: 0 1px 2px rgba(0,0,0,.4);
+    --pult-bg: #1a1a1c; --pult-kanal: #262629; --pult-text: #f2f2f3; --pult-text-2: #bcbcc2;
+    --pult-schlitz: #0c0c0d; --pult-schlitz-schatten: inset 0 1px 3px #000; --pult-zone: rgba(255,255,255,.22);
+    --pult-schatten: inset 0 1px 0 rgba(255,255,255,.06), 0 6px 24px rgba(0,0,0,.3);
+    --kappe-verlauf: linear-gradient(#5c5c62, #36363b 45%, #2b2b2f 55%, #46464b);
+    --kappe-rand: #0b0b0c; --kappe-schatten: 0 3px 6px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121214; --flaeche: #1c1c1f; --text: #f0f0f2; --text-2: #b6b6bd;
+  --linie: #3c3c42; --linie-2: #28282c;
+  --akzent: #f0f0f2; --fokus: #f0f0f2; --ueberschrift: #f0f0f2;
+  --knopf: #252528; --knopf-aktiv: #f0f0f2; --knopf-aktiv-text: #121214;
+  --schalter-schiene: #3d3d43; --schalter-rand: #5f5f67; --schalter-knopf: linear-gradient(#f4f4f6, #cfcfd4);
+  --schatten: 0 1px 2px rgba(0,0,0,.4);
+    --pult-bg: #1a1a1c; --pult-kanal: #262629; --pult-text: #f2f2f3; --pult-text-2: #bcbcc2;
+  --pult-schlitz: #0c0c0d; --pult-schlitz-schatten: inset 0 1px 3px #000; --pult-zone: rgba(255,255,255,.22);
+  --pult-schatten: inset 0 1px 0 rgba(255,255,255,.06), 0 6px 24px rgba(0,0,0,.3);
+  --kappe-verlauf: linear-gradient(#5c5c62, #36363b 45%, #2b2b2f 55%, #46464b);
+  --kappe-rand: #0b0b0c; --kappe-schatten: 0 3px 6px rgba(0,0,0,.5);
+  color-scheme: dark;
+}
+
+/* Typfarben: kommen aus CONFIG (per JS als --farbe-hell / --farbe-dunkel gesetzt). */
+/* --ausgleich: optischer Strich-Ausgleich je Typ, nur im Dunkelmodus (siehe CONFIG strichAusgleich) */
+.typ { --farbe: var(--farbe-hell); --ausgleich: 0px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .typ { --farbe: var(--farbe-dunkel); --ausgleich: var(--ausgleich-dunkel, 0px); } }
+:root[data-theme="dark"] .typ { --farbe: var(--farbe-dunkel); --ausgleich: var(--ausgleich-dunkel, 0px); }
+
+/* =====================================================================
+   Grundlayout
+   ===================================================================== */
+* { box-sizing: border-box; }
+html { font-size: clamp(16px, 0.55vw + 11px, 21px); }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.45;
+}
+.seite { max-width: 1800px; margin: 0 auto; padding: 1rem clamp(.75rem, 2vw, 2rem) 2rem; }
+h1, h2, h3 { line-height: 1.2; margin: 0; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--fokus); outline-offset: 2px; }
+.nur-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Kopf */
+.kopf { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 2rem; margin-bottom: .9rem; }
+.kopf h1 { font-size: 1.7rem; letter-spacing: -.01em; }
+.kopf h1::after { content: ""; display: block; width: 3.2rem; height: 5px; margin-top: .35rem; background: linear-gradient(90deg, #9D1681 0 33.3%, #FFE500 33.3% 66.6%, #00B2BB 66.6%); border-radius: 3px; }
+.leitsatz { margin: .4rem 0 0; font-size: 1.05rem; color: var(--text-2); }
+
+.knopf {
+  min-height: 44px; padding: .45rem .9rem; border-radius: 10px; cursor: pointer;
+  background: var(--knopf); border: 1px solid var(--linie); font-weight: 550;
+}
+.knopf:hover { border-color: var(--text-2); }
+.knopf[aria-pressed="true"] { background: var(--knopf-aktiv); color: var(--knopf-aktiv-text); border-color: var(--knopf-aktiv); }
+
+/* Bühne: Pult | Diagramm | Auswertung */
+.buehne { display: grid; gap: 1.25rem; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 900px) {
+  .buehne { grid-template-columns: minmax(0, 1.7fr) minmax(230px, 0.75fr); }
+  .auswertung { grid-column: 1 / -1; }
+}
+/* Ab 1000 px (iPad quer, MacBook 13″) stehen Pult, Kulturprofil und Auswertung nebeneinander;
+   bis 1700 px wird dafür alles etwas kleiner skaliert. */
+@media (min-width: 1000px) {
+  .buehne { grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.75fr) minmax(0, 0.95fr); gap: 1rem; }
+  .auswertung { grid-column: auto; }
+  .auswertung .ebenen { grid-template-columns: 1fr; }
+  .karte { padding: .9rem 1rem; }
+}
+@media (min-width: 1000px) and (max-width: 1699px) {
+  html { font-size: clamp(14px, 0.5vw + 9px, 18px); }
+  .beschreibung { font-size: .8rem; padding-left: .55rem; padding-right: .55rem; }
+  .fader { height: clamp(130px, 22vh, 260px); }
+  .pult-hinweis { font-size: .72rem; }
+  .legende { font-size: .74rem; gap: .3rem .9rem; }
+  .legende svg { width: 26px; }
+}
+@media (min-width: 1700px) {
+  .buehne { grid-template-columns: minmax(0, 2.3fr) minmax(280px, 0.8fr) minmax(340px, 1fr); gap: 1.25rem; }
+}
+/* Schmale Kanäle: Skalenzahlen und Beschriftung der Marke ausblenden, Kappe schmaler */
+@container (max-width: 120px) {
+  .kanal .fader-skala, .kanal .fader-geist span { display: none; }
+  .kanal .fader-kappe { width: 50px; }
+  .kanal .fader-geist { width: 44px; }
+}
+.karte { background: var(--flaeche); border: 1px solid var(--linie-2); border-radius: 18px; padding: 1.1rem 1.2rem; box-shadow: var(--schatten); }
+.karte h2 { font-size: 1.05rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ueberschrift); font-weight: 700; display: flex; align-items: center; gap: .55rem; }
+.karte h2::before { content: ""; width: 5px; height: 1.1em; border-radius: 3px; background: var(--akzent); flex: none; }
+.karte > h2 { margin-bottom: .8rem; }
+
+/* =====================================================================
+   Das Mischpult
+   ===================================================================== */
+.pult {
+  background: var(--pult-bg); color: var(--pult-text);
+  border-radius: 20px; padding: 1rem .75rem 1.1rem;
+  box-shadow: var(--pult-schatten);
+}
+/* Pult-Kopf: Ist/Soll-Umschalter und Zurücksetzen */
+.pult-kopf { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: 0 .2rem .75rem; }
+.pult-ikon {
+  flex: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--linie); background: var(--knopf); color: var(--pult-text); font-size: 1.25rem; line-height: 1;
+}
+.pult-ikon:hover { border-color: var(--pult-text-2); }
+
+/* Ist/Soll als Schiebeschalter: Beschriftung – Schiene mit Knopf – Beschriftung */
+.kipp { display: flex; align-items: center; gap: .5rem; }
+.kipp-label {
+  background: none; border: 0; padding: .2rem .25rem; min-height: 44px; cursor: pointer; border-radius: 8px;
+  color: var(--pult-text-2); text-align: center; line-height: 1.15;
+}
+.kipp-label strong { display: block; font-size: 1.05rem; padding-bottom: 2px; border-bottom: 3px solid transparent; }
+.kipp-label small { font-size: .74rem; }
+.kipp-label[aria-pressed="true"] { color: var(--pult-text); }
+.kipp-label[aria-pressed="true"] strong { border-bottom-color: currentColor; }
+/* neutral gehalten: die Typfarben (z. B. Magenta = Gemeinschaft) sollen hier nichts bedeuten */
+.kipp-schiene {
+  position: relative; flex: none; width: 58px; height: 32px; border-radius: 16px; cursor: pointer; padding: 0;
+  background: var(--schalter-schiene); border: 1px solid var(--schalter-rand); box-shadow: var(--pult-schlitz-schatten);
+}
+.kipp-schiene::after { /* runder Knopf */
+  content: ""; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--schalter-knopf); border: 1px solid var(--kappe-rand); box-shadow: var(--kappe-schatten);
+}
+.kipp[data-stand="soll"] .kipp-schiene::after { transform: translateX(26px); }
+@media (prefers-reduced-motion: no-preference) {
+  .kipp-schiene::after { transition: transform .18s ease; }
+}
+.pult-hinweis { margin: .7rem .4rem 0; font-size: .78rem; color: var(--pult-text-2); }
+/* Jede Spalte = ein Kanalzug: oben Name/Wert/Fader, darunter die Beschreibung.
+   DOM-Reihenfolge: Kanal, Beschreibung, Kanal, Beschreibung … → grid-auto-flow: column */
+.kanaele {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: auto auto;
+  grid-auto-flow: column; column-gap: .5rem; row-gap: 0;
+}
+.kanal {
+  container-type: inline-size;
+  display: flex; flex-direction: column; align-items: center; gap: .35rem;
+  background: var(--pult-kanal); border-radius: 12px 12px 0 0; padding: calc(.7rem - var(--ausgleich, 0px)) .3rem .5rem;
+  border-top: calc(5px + var(--ausgleich, 0px)) solid var(--farbe); min-width: 0;
+}
+.beschreibung {
+  background: var(--pult-kanal); border-radius: 0 0 12px 12px; padding: calc(.55rem - var(--ausgleich, 0px)) .7rem .8rem;
+  border-top: calc(4px + var(--ausgleich, 0px)) solid var(--farbe); font-size: .84rem; line-height: 1.38; min-width: 0;
+  hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word;
+}
+.beschreibung-name {
+  display: none; font: inherit; font-weight: 750; color: inherit; text-align: left;
+  background: none; border: 0; padding: 0; margin-bottom: .15rem; cursor: pointer;
+}
+.beschreibung-name:hover .kanal-info { color: var(--pult-text); }
+.beschreibung p { margin: 0; }
+.beschreibung strong { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--pult-text-2); margin-bottom: .1rem; }
+.beschreibung .vergleich { margin-top: .45rem; font-size: .76rem; color: var(--pult-text-2); font-variant-numeric: tabular-nums; }
+/* Schriftgröße passt sich der Kanalbreite an, damit auch lange Namen in eine Zeile passen */
+.kanal-name { font-weight: 750; font-size: min(1.05rem, 11.5cqi); letter-spacing: -.01em; text-align: center; white-space: nowrap; }
+.kanal-unter { font-size: min(.82rem, 11cqi); color: var(--pult-text-2); margin-top: -.3rem; text-align: center; white-space: nowrap; }
+.kanal-wert { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; font-size: min(1.75rem, 24cqi); font-weight: 700; color: var(--pult-text); line-height: 1.05; }
+.kanal-zustand { font-size: .82rem; font-weight: 650; text-align: center; min-height: 1.4em; display: flex; align-items: center; gap: .3em; }
+
+/* Fader: eigenes Element mit role="slider" (senkrecht, auf allen Geräten) */
+.fader {
+  --pos: .5; --geist: .5; --kappe: 34px;
+  position: relative; width: 100%; height: clamp(140px, 24vh, 300px);
+  touch-action: pan-y; border-radius: 10px; user-select: none; -webkit-user-select: none;
+}
+.fader.zieht, .fader.zieht .fader-kappe { cursor: grabbing; }
+.fader:focus-visible { outline: 3px solid var(--pult-text); outline-offset: 3px; }
+.fader-schlitz {
+  position: absolute; left: 50%; top: calc(var(--kappe) / 2); bottom: calc(var(--kappe) / 2);
+  width: 8px; transform: translateX(-50%); background: var(--pult-schlitz); border-radius: 4px;
+  box-shadow: var(--pult-schlitz-schatten);
+}
+.fader-zone { /* Bereich "gut ausgesteuert" */
+  position: absolute; left: 50%; width: 26px; transform: translateX(-50%);
+  bottom: calc(var(--kappe) / 2 + var(--zone-von) * (100% - var(--kappe)));
+  height: calc((var(--zone-bis) - var(--zone-von)) * (100% - var(--kappe)));
+  border-left: 2px solid var(--pult-zone); border-right: 2px solid var(--pult-zone);
+}
+.fader-pegel {
+  position: absolute; left: 50%; width: 8px; transform: translateX(-50%); border-radius: 4px;
+  bottom: calc(var(--kappe) / 2); height: calc(var(--pos) * (100% - var(--kappe)));
+  background: var(--farbe); opacity: .9;
+}
+.fader-skala { position: absolute; inset: 0; pointer-events: none; }
+.fader-skala span {
+  position: absolute; right: calc(50% + 38px);
+  bottom: calc(var(--kappe) / 2 + var(--p) * (100% - var(--kappe))); transform: translateY(50%);
+  font-size: .7rem; color: var(--pult-text-2); font-variant-numeric: tabular-nums;
+}
+.fader-skala span::after { content: ""; position: absolute; left: calc(100% + 4px); top: 50%; width: 6px; border-top: 1px solid var(--pult-text-2); }
+.fader-geist { /* Marke für den jeweils anderen Stand (Ist bzw. Soll) */
+  position: absolute; left: 50%; width: 54px; transform: translate(-50%, 50%);
+  bottom: calc(var(--kappe) / 2 + var(--geist) * (100% - var(--kappe)));
+  border-top: 3px dashed var(--pult-text); opacity: .75; pointer-events: none;
+}
+.fader-geist span { position: absolute; left: calc(100% + 4px); top: -.75em; font-size: .68rem; color: var(--pult-text); white-space: nowrap; }
+.fader-geist.verdeckt { display: none; } /* liegt unter der Kappe – dann gar nicht anzeigen */
+.fader-kappe {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--pos) * (100% - var(--kappe)));
+  width: 62px; height: var(--kappe); border-radius: 6px; touch-action: none; cursor: grab;
+  background: var(--kappe-verlauf);
+  border: 1px solid var(--kappe-rand); box-shadow: var(--kappe-schatten);
+}
+.fader-kappe::after { content: ""; position: absolute; left: 6px; right: 6px; top: 50%; height: 3px; transform: translateY(-50%); background: var(--farbe); border-radius: 2px; }
+@media (max-width: 560px) {
+  .fader-skala, .fader-geist span { display: none; }
+  .fader-kappe { width: 50px; }
+  .fader-geist { width: 44px; }
+  .kanal-wert { font-size: 1.6rem; }
+  .pult { padding-left: .45rem; padding-right: .45rem; }
+  .kanal-zustand { font-size: .72rem; }
+}
+@media (max-width: 700px) {
+  .kanaele { grid-auto-flow: row; column-gap: .3rem; row-gap: .4rem; }
+  .kanal { grid-row: 1; border-radius: 12px; }
+  .beschreibung { grid-column: 1 / -1; hyphens: manual; -webkit-hyphens: manual; border-radius: 10px; border-top: 0; border-left: calc(5px + var(--ausgleich, 0px)) solid var(--farbe); }
+  .beschreibung-name { display: block; }
+}
+
+/* =====================================================================
+   Diagramm (Raute)
+   ===================================================================== */
+#diagramm svg { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; }
+.diagramm text { fill: var(--text); font-family: inherit; }
+.diagramm .sub { fill: var(--text-2); }
+.diagramm .achse-text { fill: var(--text-2); font-size: 15px; }
+.diagramm .halo, .diagramm .achse-text { paint-order: stroke; stroke: var(--flaeche); stroke-width: 5px; stroke-linejoin: round; }
+.legende { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1.4rem; margin-top: .6rem; font-size: .9rem; color: var(--text-2); }
+.legende span { display: inline-flex; align-items: center; gap: .45rem; }
+.legende svg { width: 34px; height: 12px; }
+.legende .aktiv { color: var(--text); font-weight: 650; }
+
+/* =====================================================================
+   Auswertung
+   ===================================================================== */
+.ebenen { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.ebene { border-left: 4px solid var(--linie); padding: .1rem 0 .1rem .9rem; }
+.ebene-nr { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--text-2); font-weight: 650; }
+.ebene h3 { font-size: 1.1rem; margin: .15rem 0 .2rem; }
+.ebene .zusatz { font-size: .8rem; color: var(--text-2); margin-bottom: .3rem; }
+.ebene p { margin: .3rem 0 0; font-size: .9rem; line-height: 1.42; }
+.ebene .zitat { font-size: .98rem; font-style: italic; margin: .35rem 0 .1rem; }
+.ebene .eintrag + .eintrag { margin-top: .9rem; }
+.ebene .eintrag strong { display: block; font-size: .95rem; }
+
+.fuss { margin-top: 2rem; font-size: .85rem; color: var(--text-2); max-width: 80ch; }
+
+/* Einbettungsmodus (Kulturmischpult.html?einbettung): Pult und Kulturprofil, z. B. in der Einführung.
+   Aufgebaut wie die Vollbild-App bei 1280 px Breite und als Ganzes in den Rahmen skaliert (siehe skaliereEinbettung). */
+.eingebettet { font-size: 18px; }
+.eingebettet body { background: transparent; overflow: hidden; }
+.eingebettet .seite { width: 1280px; max-width: none; margin: 0; padding: 0; transform-origin: 0 0; }
+.eingebettet .kopf, .eingebettet .auswertung, .eingebettet .fuss, .eingebettet .druck, .eingebettet .pult-hinweis { display: none !important; }
+.eingebettet .buehne { grid-template-columns: minmax(0, 1.9fr) minmax(250px, 0.8fr) !important; }
+.eingebettet .fader { height: 240px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .knopf { transition: background-color .15s, color .15s, border-color .15s; }
+}
+
+/* Kopf-Knöpfe */
+.kopf-knoepfe { display: flex; gap: .5rem; }
+
+/* Kanalkopf als Knopf, öffnet den Steckbrief */
+.kanal-kopf {
+  display: flex; flex-direction: column; align-items: center; gap: .1rem; width: 100%;
+  background: none; border: 0; padding: .1rem 0; border-radius: 8px; cursor: pointer; color: inherit;
+}
+.kanal-kopf:hover .kanal-info { color: var(--pult-text); }
+.kanal-kopf .kanal-unter { margin-top: 0; }
+/* ⓘ in Größe des Namens; am Handy (schmale Kanäle) sitzt es stattdessen am Namen in der Beschreibung */
+.kanal-info { font-style: normal; font-weight: 400; color: var(--pult-text-2); margin-left: .3em; }
+@media (max-width: 700px) { .kanal .kanal-info { display: none; } .kanal-name { font-size: min(1.05rem, 13.5cqi); } }
+
+/* Steckbrief-Dialog */
+.steckbrief {
+  max-width: min(32rem, calc(100vw - 2rem)); width: 100%; padding: 0;
+  border: 0; border-top: 6px solid var(--farbe); border-radius: 14px;
+  background: var(--flaeche); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.steckbrief-innen { position: relative; padding: 1.3rem 1.4rem 1.2rem; }
+.steckbrief::backdrop { background: rgba(0,0,0,.45); }
+.steckbrief h2 { font-size: 1.4rem; padding-right: 2rem; }
+.steckbrief h2 small { font-size: .85rem; font-weight: 500; color: var(--text-2); margin-left: .4rem; }
+.steckbrief-lage { margin: .2rem 0 .9rem; color: var(--text-2); font-size: .9rem; }
+.steckbrief dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: .55rem 1rem; }
+.steckbrief dt { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-2); padding-top: .2rem; }
+.steckbrief dd { margin: 0; }
+.steckbrief-zu {
+  position: absolute; top: .6rem; right: .7rem; width: 40px; height: 40px; border-radius: 10px;
+  border: 1px solid var(--linie); background: var(--knopf); font-size: 1.4rem; line-height: 1; cursor: pointer;
+}
+
+/* Druckansicht */
+.druck { display: none; }
+@media print {
+  @page { margin: 14mm; }
+  body { background: #fff; }
+  .kopf-knoepfe, .pult, .auswertung, .nur-sr, .nur-bildschirm, dialog { display: none !important; }
+  .legende .aktiv { font-weight: inherit; }
+  .druck { display: block; margin-bottom: 1rem; }
+  .buehne { display: block; }
+  .diagramm { max-width: 120mm; margin: 0 auto 1rem; box-shadow: none; break-inside: avoid; }
+  .karte { box-shadow: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .druck-tabelle { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; font-size: .9rem; }
+  .druck-tabelle th, .druck-tabelle td { border-bottom: 1px solid var(--linie); padding: .35rem .5rem; text-align: left; vertical-align: top; }
+  .druck-tabelle td.zahl, .druck-tabelle th.zahl { text-align: right; font-variant-numeric: tabular-nums; }
+  .druck-tabelle td:first-child { border-left: 5px solid var(--farbe); }
+  .druck-auswertungen { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .druck-auswertungen h2 { font-size: 1rem; margin-bottom: .5rem; }
+  .druck-auswertungen .ebenen { grid-template-columns: 1fr; gap: .7rem; }
+  .druck-auswertungen .ebene h3 { font-size: 1.05rem; }
+  .druck-auswertungen { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="seite" id="seite">
+
+  <header class="kopf">
+    <div>
+      <h1 id="titel">Kulturmischpult</h1>
+      <p class="leitsatz" id="leitsatz"></p>
+    </div>
+    <div class="kopf-knoepfe">
+      <button type="button" class="knopf" id="druckKnopf">⎙ Drucken</button>
+      <button type="button" class="knopf" id="themaKnopf"></button>
+    </div>
+  </header>
+
+  <!-- nur beim Drucken sichtbar: Ergebnis mit Ist und Soll -->
+  <section class="druck" id="druck" aria-hidden="true"></section>
+
+  <main class="buehne">
+    <section class="pult" aria-label="Regler">
+      <div class="pult-kopf">
+        <div class="kipp" id="kipp" role="group" aria-label="Welcher Stand wird eingestellt?">
+          <button type="button" class="kipp-label" data-modus="ist"></button>
+          <button type="button" class="kipp-schiene" id="kippSchiene"><span class="nur-sr">Zwischen Ist und Soll umschalten</span></button>
+          <button type="button" class="kipp-label" data-modus="soll"></button>
+        </div>
+        <button type="button" class="pult-ikon" id="zuruecksetzen">↺</button>
+      </div>
+      <div class="kanaele" id="kanaele"></div>
+      <p class="pult-hinweis" id="pultHinweis"></p>
+    </section>
+
+    <section class="karte diagramm" aria-labelledby="diagrammTitel">
+      <h2 id="diagrammTitel">Kulturprofil</h2>
+      <div id="diagramm"></div>
+      <div class="legende" id="legende"></div>
+    </section>
+
+    <section class="karte auswertung" aria-labelledby="auswertungTitel">
+      <h2 id="auswertungTitel">Mischungsauswertung</h2>
+      <div class="ebenen" id="ebenen"></div>
+    </section>
+  </main>
+
+
+  <dialog class="steckbrief typ" id="steckbrief" aria-labelledby="steckbriefName">
+    <div class="steckbrief-innen">
+      <button type="button" class="steckbrief-zu" id="steckbriefZu" aria-label="Schließen">×</button>
+      <h2 id="steckbriefName"></h2>
+      <p class="steckbrief-lage" id="steckbriefLage"></p>
+      <dl id="steckbriefInhalt"></dl>
+    </div>
+  </dialog>
+
+  <p class="fuss" id="fuss"></p>
+  <div class="nur-sr" aria-live="polite" id="ansage"></div>
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   KONFIGURATION – hier können alle Texte, Farben, Schwellen und
+   Startwerte ohne Programmierkenntnisse angepasst werden.
+   Bitte nur die Texte zwischen den Anführungszeichen bzw. die Zahlen ändern.
+   Platzhalter in geschweiften Klammern (z. B. {A}) werden automatisch ersetzt.
+   ===================================================================== */
+const CONFIG = {
+  titel: "Kulturmischpult",
+  leitsatz: "Es gibt keine gute oder schlechte Kultur, nur eine passende oder unpassende.",
+  hinweisRegler: "Tipp: Regler an der Kappe anfassen und schieben. Doppelklick bzw. Doppeltipp auf die Kappe setzt den Regler auf die Mitte.",
+  reglerMitte: 50,   // Wert nach Doppelklick/Doppeltipp (bzw. Taste 0 / Entf)
+  fusszeile: "Vereinfachtes Anschauungswerkzeug nach dem Competing Values Framework (Cameron & Quinn).",
+
+  // Wertebereich der Regler ist immer 0–100.
+  schwellen: {
+    untersteuertBis: 29,       // 0 bis hier = untersteuert
+    uebersteuertAb: 71,        // ab hier bis 100 = übersteuert (dazwischen: gut ausgesteuert)
+    gleichstandAbstand: 5,     // Ebene 1: Werte, die weniger als so viele Punkte auseinander liegen, gelten als "fast gleich"
+    ausgewogenMaxSpanne: 10,   // Ebene 2: höchster minus niedrigster Wert bis hierher = ausgewogen
+    einseitigVorsprung: 20,    // Ebene 2: Vorsprung des höchsten Reglers vor dem zweiten ab hier = einseitig
+    spannungAb: 55,            // Ebene 3: beide gegenüberliegenden Regler mindestens so hoch = Spannung
+    uebergewichtAb: 40         // Ebene 3: Differenz zweier gegenüberliegender Regler ab hier = deutliches Übergewicht
+  },
+
+  // Bezeichnungen der drei Zustände eines Reglers
+  zustaende: {
+    unter: { name: "untersteuert",     symbol: "▼", praefix: "Wenn zu leise" },
+    gut:   { name: "gut ausgesteuert", symbol: "●", praefix: "Stärken" },
+    ueber: { name: "übersteuert",      symbol: "▲", praefix: "Wenn zu laut" }
+  },
+
+  // Überschriften im Steckbrief (ⓘ am Kanal) und Lage im Modell
+  steckbriefTitel: { fuehrung: "Führung", denkweise: "Denkweise", verhalten: "Verhalten" },
+  lage: { ol: "flexibel · intern", or: "flexibel · extern", ul: "stabil · intern", ur: "stabil · extern" },
+
+  // Die vier Kulturtypen (nur deutsche Namen – die englischen Originalbegriffe werden bewusst nicht angezeigt).
+  // "ecke" = Lage im Diagramm:
+  // ol = oben links (flexibel + intern), or = oben rechts (flexibel + extern),
+  // ul = unten links (stabil + intern),  ur = unten rechts (stabil + extern)
+  // Farben: iteratec-Primärfarben; "dunkel" wird auf dunklem Hintergrund verwendet.
+  typen: [
+    {
+      id: "clan", name: "Gemeinschaft", ecke: "ol",
+      farbe: { hell: "#9D1681", dunkel: "#9D1681" },   // iteragenta
+      strichAusgleich: 1,   // optional: im Dunkelmodus farbige Striche dieses Typs um so viele px dicker – dunkles Magenta wirkt dort sonst dünner
+      texte: {
+        gut:   "Loyalität, Vertrauen, Zusammenhalt, niedrige Fluktuation.",
+        ueber: "Harmonie vor Klarheit: Konflikte und schwierige Entscheidungen werden vermieden.",
+        unter: "Nebeneinander statt miteinander: wenig Vertrauen, Leute gehen schneller."
+      },
+      steckbrief: {
+        fuehrung:  "Begleitet und fördert, stärkt das Miteinander",
+        denkweise: "Mitreden und Dazugehören",
+        verhalten: "Sozial, menschenorientiert, demokratisch, gemeinschaftlich"
+      }
+    },
+    {
+      id: "adhocracy", name: "Pioniergeist", ecke: "or",
+      farbe: { hell: "#FFE500", dunkel: "#FFE500" },   // Gelb
+      texte: {
+        gut:   "Kreativität, Experimentierfreude, schnelle Anpassung, Innovation.",
+        ueber: "Viele Ideen, wenig wird fertig: Fokus und klare Rollen fehlen.",
+        unter: "Stillstand: Neues hat es schwer, Entwicklungen werden spät bemerkt."
+      },
+      steckbrief: {
+        fuehrung:  "Visionär, treibt Veränderung an",
+        denkweise: "Experimentieren und Innovieren",
+        verhalten: "Unternehmerisch, innovationsorientiert, risikofreudig, ideenorientiert"
+      }
+    },
+    {
+      id: "market", name: "Leistung", ecke: "ur",
+      farbe: { hell: "#00B2BB", dunkel: "#00B2BB" },   // Mint
+      texte: {
+        gut:   "Antrieb, klare Ziele, gesunder Ehrgeiz, verlässliche Ergebnisse.",
+        ueber: "Druck statt Zusammenarbeit: Zahlen verdrängen alles andere.",
+        unter: "Vage Ziele: wenig Zug zum Ergebnis, Verantwortung bleibt unklar."
+      },
+      steckbrief: {
+        fuehrung:  "Strategisch, gibt Richtung und Tempo vor",
+        denkweise: "Herausfordernd und wettbewerbsorientiert",
+        verhalten: "Zielorientiert, leistungsfähig, ergebnisorientiert"
+      }
+    },
+    {
+      id: "hierarchy", name: "Ordnung", ecke: "ul",
+      farbe: { hell: "#3C3C3B", dunkel: "#C8C8CC" },   // Anthrazit (neutrale Ergänzung zu den drei Markenfarben)
+      texte: {
+        gut:   "Verlässlichkeit, klare Abläufe, Qualität, Stabilität.",
+        ueber: "Zu viele Regeln: Abläufe werden langsam, Eigeninitiative hat wenig Platz.",
+        unter: "Unklare Zuständigkeiten: Fehler wiederholen sich, Qualität schwankt."
+      },
+      steckbrief: {
+        fuehrung:  "Organisiert und koordiniert, sorgt für klare Linie",
+        denkweise: "Planbarkeit und Sorgfalt",
+        verhalten: "Prozessorientiert, effizient, verlässlich, klare Zuständigkeiten"
+      }
+    }
+  ],
+
+  // Ebene 1 – Grundcharakter: die zwei höchsten Regler (Reihenfolge egal)
+  paare: {
+    "clan+adhocracy": {
+      name: "Die kreative Familie",
+      text: "Ein warmes, ideenfreudiges Umfeld: Man hält zusammen und probiert gern Neues aus. Die Kunst ist, aus guten Ideen auch Ergebnisse werden zu lassen."
+    },
+    "market+hierarchy": {
+      name: "Das präzise Uhrwerk",
+      text: "Stark in der Ausführung: klare Ziele, klare Abläufe, verlässliche Ergebnisse. Wichtig ist, dass dabei der Mensch sichtbar bleibt."
+    },
+    "clan+hierarchy": {
+      name: "Der verlässliche Familienbetrieb",
+      text: "Fürsorglich und geordnet: Man kümmert sich umeinander und weiß, wie die Dinge laufen. Veränderung braucht hier oft etwas mehr Anlauf."
+    },
+    "adhocracy+market": {
+      name: "Das hungrige Start-up",
+      text: "Schnell, mutig und ergebnishungrig: Neues wird ausprobiert und soll sich rasch auszahlen. Dabei kann es leicht rastlos werden."
+    },
+    "clan+market": {
+      name: "Gemeinsam ans Ziel",
+      text: "Man hält zusammen und zieht an einem Strang, wenn es um Ergebnisse geht. Beides trägt sich gegenseitig, wenn man es bewusst pflegt."
+    },
+    "adhocracy+hierarchy": {
+      name: "Das geordnete Labor",
+      text: "Neugier mit System: Ideen sind willkommen, sollen aber in geordneten Bahnen laufen. Das funktioniert, wenn klar ist, wo Freiraum gilt und wo Regeln."
+    }
+  },
+
+  grundcharakter: {
+    stumm:      { titel: "Stille am Pult", text: "Alle Regler stehen auf null. Noch ist keine Kultur zu hören." },
+    alleGleich: { titel: "Kein Paar gibt den Ton an", text: "Alle vier Regler stehen nahezu gleich hoch. Ein dominanter Grundcharakter ist nicht erkennbar." },
+    mehrereGleichauf: { titel: "Kein klares Paar", text: "{typen} liegen fast gleichauf. Welche Kombination den Ton angibt, ist offen." },
+    paarOffen:  { titel: "{A} führt – das Paar ist offen", text: "{A} gibt den Ton an. Dahinter liegen {andere} fast gleichauf. Je nachdem, welcher davon stärker wird, entsteht {kandidaten}." }
+  },
+
+  // Ebene 2 – Balance
+  balance: {
+    alleLeise:  { titel: "Alle Regler leise", text: "Alle Regler stehen weit unten. Die Kultur hat im Moment wenig erkennbares Profil." },
+    alleLaut:   { titel: "Alle Regler weit oben", text: "Alles gleichzeitig laut zu drehen klingt selten gut. Irgendwo braucht es Prioritäten." },
+    ausgewogen: { titel: "Ausgewogen – Schwerpunkte noch offen", text: "Alle Regler stehen ähnlich hoch. Das wirkt harmonisch – offen ist, wofür man besonders stehen will." },
+    einseitig:  { titel: "Ausgeprägt – aber einseitig", text: "Der Regler {typ} übertönt die anderen deutlich. Das gibt ein klares Profil, macht aber auch anfälliger für die Nebenwirkungen dieses einen Reglers." },
+    gemischt:   { titel: "Gemischt mit Profil", text: "Es gibt erkennbare Schwerpunkte, ohne dass ein einzelner Regler alles übertönt." }
+  },
+
+  // Ebene 3 – Spannung zwischen gegenüberliegenden Reglern ({A} und {B} = die beiden Typnamen)
+  spannungen: [
+    {
+      a: "clan", b: "market",
+      titel: "{A} und {B} zugleich",
+      zitat: "Wir wollen füreinander da sein – und gemeinsam Ergebnisse liefern.",
+      text: "Zusammenhalt und Ergebnisorientierung setzen unterschiedliche Schwerpunkte. Beides zugleich ist möglich und gelingt am besten, wenn Ziele klar sind und der Weg dorthin gemeinsam gegangen wird."
+    },
+    {
+      a: "adhocracy", b: "hierarchy",
+      titel: "{A} und {B} zugleich",
+      zitat: "Wir wollen Neues ausprobieren – und verlässlich bleiben.",
+      text: "Wandel und Stabilität setzen unterschiedliche Schwerpunkte. Beides zugleich gelingt mit klaren Spielräumen fürs Experimentieren innerhalb verlässlicher Leitplanken."
+    }
+  ],
+  spannungTexte: {
+    uebergewicht: { titel: "{A} hat mehr Gewicht als {B}", text: "{A} und {B} liegen sich gegenüber und setzen unterschiedliche Schwerpunkte. {A} hat derzeit deutlich mehr Gewicht als {B}." },
+    keine:        { titel: "Keine ausgeprägten Gegenpole", text: "Gegenüberliegende Regler stehen nicht gleichzeitig weit oben." }
+  },
+
+  // Ist und Soll
+  modi: {
+    ist:  { name: "Ist",  zusatz: "heute",       lang: "Ist (heute)" },
+    soll: { name: "Soll", zusatz: "in 2 Jahren", lang: "Soll (in 2 Jahren)" }
+  },
+
+
+  // Beschriftung des ↺-Knopfs im Pult-Kopf (erscheint als Tooltip und für Screenreader)
+  zuruecksetzenText: "Ist und Soll auf die Mitte setzen",
+
+  // Startwerte beim allerersten Öffnen
+  start: { clan: 50, adhocracy: 50, market: 50, hierarchy: 50 },
+
+  // Letzten Reglerstand lokal im Browser merken (true/false)
+  merken: true
+};
+
+
+/* =====================================================================
+   AUSWERTUNG – reine Funktionen ohne Seiteneffekte.
+   auswerten(werte) bekommt { clan, adhocracy, market, hierarchy } (0–100)
+   und liefert die drei Ebenen. So kann später (Stufe 2) auch ein
+   gemitteltes Teamprofil hineingegeben werden.
+   ===================================================================== */
+const klemme = (v) => Math.max(0, Math.min(100, Math.round(Number(v) || 0)));
+const typVon = (id) => CONFIG.typen.find((t) => t.id === id);
+
+/** Ersetzt {Platzhalter} im Text. */
+function fuelle(text, daten) {
+  return text.replace(/\{(\w+)\}/g, (m, k) => (k in daten ? daten[k] : m));
+}
+
+/** "A, B und C" */
+function aufzaehlung(teile, wort = "und") {
+  if (teile.length <= 1) return teile.join("");
+  return teile.slice(0, -1).join(", ") + " " + wort + " " + teile[teile.length - 1];
+}
+
+function zustandVon(wert) {
+  const s = CONFIG.schwellen;
+  if (wert <= s.untersteuertBis) return "unter";
+  if (wert >= s.uebersteuertAb) return "ueber";
+  return "gut";
+}
+
+function paarVon(idA, idB) {
+  return CONFIG.paare[idA + "+" + idB] || CONFIG.paare[idB + "+" + idA];
+}
+
+function auswerten(rohwerte) {
+  const werte = {};
+  CONFIG.typen.forEach((t) => (werte[t.id] = klemme(rohwerte[t.id])));
+  // Absteigend sortiert; bei Gleichstand bleibt die Reihenfolge aus CONFIG erhalten.
+  const liste = CONFIG.typen.map((t) => ({ typ: t, wert: werte[t.id] })).sort((a, b) => b.wert - a.wert);
+
+  const zustaende = {};
+  CONFIG.typen.forEach((t) => (zustaende[t.id] = zustandVon(werte[t.id])));
+
+  return {
+    werte,
+    zustaende,
+    grundcharakter: ebeneGrundcharakter(liste),
+    balance: ebeneBalance(liste),
+    spannungen: ebeneSpannung(werte)
+  };
+}
+
+function ebeneGrundcharakter(liste) {
+  const T = CONFIG.grundcharakter;
+  const abstand = CONFIG.schwellen.gleichstandAbstand;
+  const max = liste[0].wert, min = liste[liste.length - 1].wert;
+
+  if (max === 0) return { titel: T.stumm.titel, text: T.stumm.text };
+  if (max - min < abstand) return { titel: T.alleGleich.titel, text: T.alleGleich.text };
+
+  const [erster, zweiter] = liste;
+  // Alle Regler ab Platz 2, die fast gleich hoch wie Platz 2 sind (inkl. Platz 2 selbst)
+  const gleichauf = liste.slice(1).filter((e) => zweiter.wert - e.wert < abstand);
+
+  if (gleichauf.length >= 2) {
+    if (erster.wert - zweiter.wert < abstand) {
+      const spitze = [erster, ...gleichauf].map((e) => e.typ.name);
+      return { titel: T.mehrereGleichauf.titel, text: fuelle(T.mehrereGleichauf.text, { typen: aufzaehlung(spitze) }) };
+    }
+    const kandidaten = gleichauf.map((e) => "„" + paarVon(erster.typ.id, e.typ.id).name + "“");
+    const daten = {
+      A: erster.typ.name,
+      andere: aufzaehlung(gleichauf.map((e) => e.typ.name)),
+      kandidaten: aufzaehlung(kandidaten, "oder")
+    };
+    return { titel: fuelle(T.paarOffen.titel, daten), text: fuelle(T.paarOffen.text, daten) };
+  }
+
+  const paar = paarVon(erster.typ.id, zweiter.typ.id);
+  return { titel: paar.name, zusatz: erster.typ.name + " + " + zweiter.typ.name, text: paar.text };
+}
+
+function ebeneBalance(liste) {
+  const B = CONFIG.balance, s = CONFIG.schwellen;
+  const max = liste[0].wert, min = liste[liste.length - 1].wert;
+
+  if (liste.every((e) => e.wert <= s.untersteuertBis)) return B.alleLeise;
+  if (liste.every((e) => e.wert >= s.uebersteuertAb)) return B.alleLaut;
+  if (max - min <= s.ausgewogenMaxSpanne) return B.ausgewogen;
+  if (liste[0].wert - liste[1].wert >= s.einseitigVorsprung) {
+    return { titel: B.einseitig.titel, text: fuelle(B.einseitig.text, { typ: liste[0].typ.name }) };
+  }
+  return B.gemischt;
+}
+
+function ebeneSpannung(werte) {
+  const s = CONFIG.schwellen, T = CONFIG.spannungTexte;
+  const ergebnis = [];
+  CONFIG.spannungen.forEach((sp) => {
+    const a = werte[sp.a], b = werte[sp.b];
+    if (a >= s.spannungAb && b >= s.spannungAb) {
+      const daten = { A: typVon(sp.a).name, B: typVon(sp.b).name };
+      ergebnis.push({ titel: fuelle(sp.titel, daten), zitat: sp.zitat, text: fuelle(sp.text, daten) });
+    } else if (Math.abs(a - b) >= s.uebergewichtAb) {
+      const daten = a > b
+        ? { A: typVon(sp.a).name, B: typVon(sp.b).name }
+        : { A: typVon(sp.b).name, B: typVon(sp.a).name };
+      ergebnis.push({ titel: fuelle(T.uebergewicht.titel, daten), text: fuelle(T.uebergewicht.text, daten) });
+    }
+  });
+  if (!ergebnis.length) ergebnis.push({ titel: T.keine.titel, text: T.keine.text });
+  return ergebnis;
+}
+
+
+/* =====================================================================
+   ZUSTAND & SPEICHERN
+   ===================================================================== */
+const SPEICHER_SCHLUESSEL = "kulturmischpult.v1";
+
+const zustand = {
+  ist: { ...CONFIG.start },
+  soll: { ...CONFIG.start },
+  modus: "ist",                        // welcher Stand gerade bearbeitet wird
+  thema: null                          // null = Systemeinstellung, sonst "light" / "dark"
+};
+
+function laden() {
+  if (!CONFIG.merken) return;
+  try {
+    const d = JSON.parse(localStorage.getItem(SPEICHER_SCHLUESSEL) || "null");
+    if (!d) return;
+    ["ist", "soll"].forEach((m) => {
+      if (d[m]) CONFIG.typen.forEach((t) => { if (t.id in d[m]) zustand[m][t.id] = klemme(d[m][t.id]); });
+    });
+    if (d.modus === "ist" || d.modus === "soll") zustand.modus = d.modus;
+    if (d.thema === "light" || d.thema === "dark") zustand.thema = d.thema;
+  } catch (e) { /* z. B. localStorage gesperrt – dann eben ohne Merken */ }
+}
+
+function speichern() {
+  if (!CONFIG.merken) return;
+  try { localStorage.setItem(SPEICHER_SCHLUESSEL, JSON.stringify(zustand)); } catch (e) { /* ignorieren */ }
+}
+
+const andererModus = () => (zustand.modus === "ist" ? "soll" : "ist");
+
+
+/* =====================================================================
+   OBERFLÄCHE AUFBAUEN
+   ===================================================================== */
+const $ = (sel, wurzel = document) => wurzel.querySelector(sel);
+
+function element(tag, klasse, text) {
+  const e = document.createElement(tag);
+  if (klasse) e.className = klasse;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function setzeTypfarbe(el, typ) {
+  el.classList.add("typ");
+  el.style.setProperty("--farbe-hell", typ.farbe.hell);
+  el.style.setProperty("--farbe-dunkel", typ.farbe.dunkel);
+  if (typ.strichAusgleich) el.style.setProperty("--ausgleich-dunkel", typ.strichAusgleich + "px");
+}
+
+// Verweise auf Elemente, die bei jeder Änderung aktualisiert werden
+const ui = { kanaele: {}, beschreibungen: {} };
+
+function baueOberflaeche() {
+  document.title = CONFIG.titel;
+  $("#titel").textContent = CONFIG.titel;
+  $("#leitsatz").textContent = CONFIG.leitsatz;
+  $("#fuss").textContent = CONFIG.fusszeile;
+  $("#pultHinweis").textContent = CONFIG.hinweisRegler;
+
+  const s = CONFIG.schwellen;
+  document.documentElement.style.setProperty("--zone-von", (s.untersteuertBis + 1) / 100);
+  document.documentElement.style.setProperty("--zone-bis", (s.uebersteuertAb - 1) / 100);
+
+  // Ist/Soll-Umschalter
+  document.querySelectorAll("[data-modus]").forEach((k) => {
+    const m = CONFIG.modi[k.dataset.modus];
+    k.append(element("strong", null, m.name), element("small", null, m.zusatz));
+    k.addEventListener("click", () => { zustand.modus = k.dataset.modus; aktualisiere(); });
+  });
+  $("#kippSchiene").addEventListener("click", () => { zustand.modus = andererModus(); aktualisiere(); });
+
+
+  // Zurücksetzen: Ist und Soll auf die Mitte
+  const reset = $("#zuruecksetzen");
+  reset.title = CONFIG.zuruecksetzenText;
+  reset.setAttribute("aria-label", CONFIG.zuruecksetzenText);
+  reset.addEventListener("click", () => {
+    CONFIG.typen.forEach((t) => { zustand.ist[t.id] = CONFIG.reglerMitte; zustand.soll[t.id] = CONFIG.reglerMitte; });
+    aktualisiere();
+  });
+
+  // Thema
+  // Steckbrief schließen: Knopf, Klick auf den Hintergrund, Esc (Esc macht <dialog> selbst)
+  $("#steckbriefZu").addEventListener("click", () => $("#steckbrief").close());
+  $("#steckbrief").addEventListener("click", (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+
+  // Drucken: immer im Hellmodus, mit Ist und Soll
+  $("#druckKnopf").addEventListener("click", () => window.print());
+  let themaVorDruck;
+  window.addEventListener("beforeprint", () => {
+    themaVorDruck = document.documentElement.dataset.theme;
+    document.documentElement.dataset.theme = "light";
+    baueDruckansicht();
+  });
+  window.addEventListener("afterprint", () => {
+    if (themaVorDruck) document.documentElement.dataset.theme = themaVorDruck;
+    else delete document.documentElement.dataset.theme;
+    if (dia.druckAuswertung) dia.druckAuswertung.remove();
+  });
+
+  $("#themaKnopf").addEventListener("click", () => {
+    zustand.thema = istDunkel() ? "light" : "dark";
+    aktualisiere();
+  });
+
+  // Kanalzüge: Fader und Beschreibung
+  const skalaWerte = [0, s.untersteuertBis + 1, s.uebersteuertAb - 1, 100];
+  CONFIG.typen.forEach((typ) => {
+    // --- Kanalzug am Pult ---
+    const kanal = element("div", "kanal");
+    setzeTypfarbe(kanal, typ);
+    // Kopf (Name + Originalbegriff) ist ein Knopf: öffnet den Steckbrief
+    const kopf = element("button", "kanal-kopf");
+    kopf.type = "button";
+    kopf.title = "Steckbrief " + typ.name;
+    const name = element("span", "kanal-name", typ.name);
+    name.appendChild(element("i", "kanal-info", "ⓘ"));
+    kopf.append(name);
+    kopf.addEventListener("click", () => zeigeSteckbrief(typ));
+    const wert = element("div", "kanal-wert"); wert.setAttribute("aria-hidden", "true");
+
+    const fader = element("div", "fader");
+    fader.tabIndex = 0;
+    fader.setAttribute("role", "slider");
+    fader.setAttribute("aria-orientation", "vertical");
+    fader.setAttribute("aria-valuemin", "0");
+    fader.setAttribute("aria-valuemax", "100");
+    fader.setAttribute("aria-label", typ.name);
+
+    const skala = element("div", "fader-skala"); skala.setAttribute("aria-hidden", "true");
+    skalaWerte.forEach((v) => { const sp = element("span", null, String(v)); sp.style.setProperty("--p", v / 100); skala.appendChild(sp); });
+    const geist = element("div", "fader-geist"); geist.setAttribute("aria-hidden", "true");
+    const geistText = element("span");
+    geist.appendChild(geistText);
+    fader.append(element("div", "fader-schlitz"), element("div", "fader-zone"), element("div", "fader-pegel"), skala, geist, element("div", "fader-kappe"));
+
+    const zst = element("div", "kanal-zustand"); zst.setAttribute("aria-hidden", "true");
+    kanal.append(kopf, wert, fader, zst);
+    $("#kanaele").appendChild(kanal);
+    verbindeFader(fader, typ.id);
+    ui.kanaele[typ.id] = { fader, wert, zst, geist, geistText };
+
+    // --- Beschreibung direkt unter dem Kanal (gleiche Spalte) ---
+    const besch = element("div", "beschreibung");
+    setzeTypfarbe(besch, typ);
+    const praefix = element("strong");
+    const text = element("span");
+    const absatz = element("p");
+    absatz.append(praefix, text);
+    const vergleich = element("div", "vergleich");
+    const beschName = element("button", "beschreibung-name", typ.name);
+    beschName.type = "button";
+    beschName.title = "Steckbrief " + typ.name;
+    beschName.appendChild(element("i", "kanal-info", "ⓘ"));
+    beschName.addEventListener("click", () => zeigeSteckbrief(typ));
+    besch.append(beschName, absatz, vergleich);
+    $("#kanaele").appendChild(besch);
+    ui.beschreibungen[typ.id] = { praefix, text, vergleich };
+  });
+
+  baueDiagramm();
+}
+
+/* ---------- Fader-Bedienung: Maus, Touch, Tastatur ---------- */
+const DOPPELTIPP_MS = 350; // max. Abstand zweier Klicks/Tipps für einen Doppelklick
+function verbindeFader(fader, id) {
+  let ziehen = false;
+  let versatz = 0; // Abstand Zeiger ↔ Kappenmitte, damit die Kappe beim Anfassen nicht springt
+  let letzterTipp = { zeit: -Infinity, y: 0 }; // für Doppelklick/Doppeltipp
+
+  const wertAusY = (clientY) => {
+    const r = fader.getBoundingClientRect();
+    // Skalierung berücksichtigen (z. B. verkleinert eingebettet): Bildschirm-px je Layout-px
+    const massstab = r.height / fader.offsetHeight || 1;
+    const kappe = (parseFloat(getComputedStyle(fader).getPropertyValue("--kappe")) || 34) * massstab;
+    const y = r.bottom - clientY + versatz - kappe / 2;
+    return klemme((y / (r.height - kappe)) * 100);
+  };
+
+  const kappe = $(".fader-kappe", fader);
+
+  // Nur die Kappe reagiert auf Maus/Touch – ein Klick auf die Schiene verschiebt nichts.
+  fader.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || !kappe.contains(e.target)) return;
+    e.preventDefault();
+    fader.focus({ preventScroll: true });
+
+    // Doppelklick bzw. Doppeltipp: Regler auf die Mitte setzen.
+    // (Eigene Erkennung, weil "dblclick" auf Touch-Geräten hier nicht zuverlässig ankommt.)
+    if (e.timeStamp - letzterTipp.zeit < DOPPELTIPP_MS && Math.abs(e.clientY - letzterTipp.y) < 30) {
+      letzterTipp.zeit = -Infinity;
+      setzeWert(id, CONFIG.reglerMitte);
+      return;
+    }
+    letzterTipp = { zeit: e.timeStamp, y: e.clientY };
+
+    ziehen = true;
+    fader.setPointerCapture(e.pointerId);
+    fader.classList.add("zieht");
+    const kr = kappe.getBoundingClientRect();
+    versatz = e.clientY - (kr.top + kr.height / 2);
+  });
+  fader.addEventListener("pointermove", (e) => { if (ziehen) setzeWert(id, wertAusY(e.clientY)); });
+  const loslassen = () => { ziehen = false; fader.classList.remove("zieht"); };
+  fader.addEventListener("pointerup", loslassen);
+  fader.addEventListener("pointercancel", loslassen);
+
+  fader.addEventListener("keydown", (e) => {
+    const aktuell = zustand[zustand.modus][id];
+    const schritt = e.shiftKey ? 10 : 1;
+    let neu;
+    switch (e.key) {
+      case "ArrowUp": case "ArrowRight": neu = aktuell + schritt; break;
+      case "ArrowDown": case "ArrowLeft": neu = aktuell - schritt; break;
+      case "PageUp": neu = aktuell + 10; break;
+      case "PageDown": neu = aktuell - 10; break;
+      case "Home": neu = 0; break;
+      case "End": neu = 100; break;
+      case "0": case "Delete": case "Backspace": neu = CONFIG.reglerMitte; break;
+      default: return;
+    }
+    e.preventDefault();
+    setzeWert(id, neu);
+  });
+}
+
+function setzeWert(id, wert) {
+  wert = klemme(wert);
+  if (zustand[zustand.modus][id] === wert) return;
+  zustand[zustand.modus][id] = wert;
+  aktualisiere();
+}
+
+
+/* =====================================================================
+   DIAGRAMM (SVG, selbst gezeichnet): Raute mit den vier Typen an den Ecken.
+   Ist = durchgezogen, Soll = gestrichelt.
+   ===================================================================== */
+const SVG_NS = "http://www.w3.org/2000/svg";
+const D = { mx: 240, my: 245, R: 150, kasten: 130 }; // Mittelpunkt, Radius bei Wert 100 (entlang der Diagonale), halbe Kastenbreite
+const RICHTUNG = { ol: [-1, -1], or: [1, -1], ur: [1, 1], ul: [-1, 1] };
+const ECKEN_REIHENFOLGE = ["ol", "or", "ur", "ul"]; // im Uhrzeigersinn
+const dia = {};
+
+function svg(tag, attrs = {}, eltern) {
+  const e = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+  if (eltern) eltern.appendChild(e);
+  return e;
+}
+function svgText(eltern, attrs, text) { const t = svg("text", attrs, eltern); if (text != null) t.textContent = text; return t; }
+
+/** Zentriertes Quadrat für einen Wert (0–100); seine Ecken liegen auf den Diagonalen der Raute */
+const quadratPfad = (wert) => {
+  const h = ((wert / 100) * D.R) / Math.SQRT2;
+  return `M${D.mx - h},${D.my - h}H${D.mx + h}V${D.my + h}H${D.mx - h}Z`;
+};
+const rautePunkt = (ecke, wert, extra = 0) => {
+  const [dx, dy] = RICHTUNG[ecke];
+  const r = ((wert / 100) * D.R + extra) / Math.SQRT2;
+  return [D.mx + dx * r, D.my + dy * r];
+};
+
+function baueDiagramm() {
+  const s = CONFIG.schwellen;
+  const { mx, my, kasten: k } = D;
+  const wurzel = svg("svg", { viewBox: "100 62 280 350", role: "img" });
+  dia.titel = svg("title", {}, wurzel);
+  $("#diagramm").appendChild(wurzel);
+
+  // Quadranten in Typfarbe, sehr zart
+  CONFIG.typen.forEach((typ) => {
+    const [dx, dy] = RICHTUNG[typ.ecke];
+    const q = svg("rect", { x: dx < 0 ? mx - k : mx, y: dy < 0 ? my - k : my, width: k, height: k, fill: "var(--farbe)", "fill-opacity": "0.1" }, wurzel);
+    setzeTypfarbe(q, typ);
+  });
+
+  // Band "gut ausgesteuert", Gitter und Achsen
+  svg("path", { d: quadratPfad(s.uebersteuertAb - 1) + quadratPfad(s.untersteuertBis + 1), "fill-rule": "evenodd", fill: "var(--text)", "fill-opacity": "0.05" }, wurzel);
+  [25, 50, 75, 100].forEach((l) => svg("path", { d: quadratPfad(l), fill: "none", stroke: "var(--linie)", "stroke-width": l === 100 ? 1.5 : 1 }, wurzel));
+  svg("line", { x1: mx, y1: my - k, x2: mx, y2: my + k, stroke: "var(--text-2)", "stroke-width": 1.5 }, wurzel);
+  svg("line", { x1: mx - k, y1: my, x2: mx + k, y2: my, stroke: "var(--text-2)", "stroke-width": 1.5 }, wurzel);
+
+  const achse = (x, y, text, anker) => svgText(wurzel, { x, y, "text-anchor": anker, class: "achse-text", "dominant-baseline": "middle" }, text);
+  achse(mx, my - k + 14, "↑ flexibel", "middle");
+  achse(mx, my + k - 14, "stabil ↓", "middle");
+  // intern/extern innen an den Rand (wie flexibel/stabil) – spart Breite für das Pult
+  achse(mx - k + 8, my, "← intern", "start");
+  achse(mx + k - 8, my, "extern →", "end");
+
+  // Typnamen außen an den Ecken
+  CONFIG.typen.forEach((typ) => {
+    const [dx, dy] = RICHTUNG[typ.ecke];
+    const x = dx < 0 ? mx - k : mx + k;
+    const anker = dx < 0 ? "start" : "end";
+    const yName = dy < 0 ? my - k - 30 : my + k + 26;
+    const g = svg("g", {}, wurzel);
+    setzeTypfarbe(g, typ);
+    svgText(g, { x, y: yName, "text-anchor": anker, "font-size": 17, "font-weight": 750 }, typ.name);
+    svg("rect", { x: dx < 0 ? x : x - 30, y: yName + (dy < 0 ? 24 : -28), width: 30, height: 6, rx: 3, fill: "var(--farbe)" }, g);
+  });
+
+  // Flächen für Ist (durchgezogen) und Soll (gestrichelt)
+  dia.flaeche = {
+    ist: svg("polygon", { fill: "var(--text)", stroke: "var(--text)", "stroke-width": 3, "stroke-linejoin": "round" }, wurzel),
+    soll: svg("polygon", { fill: "var(--text)", stroke: "var(--text)", "stroke-width": 3, "stroke-dasharray": "9 7", "stroke-linejoin": "round" }, wurzel)
+  };
+
+  // Schwerpunkt: Neigung der Kultur je Stand (Ist gefüllt, Soll hohl/gestrichelt) und Pfeil Ist → Soll
+  const defs = svg("defs", {}, wurzel);
+  const spitze = svg("marker", { id: "schwerpunktPfeil", viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto" }, defs);
+  svg("path", { d: "M0,0 L10,5 L0,10 z", style: "fill: var(--text)" }, spitze);
+  dia.schwerpunkt = {
+    pfeil: svg("line", { stroke: "var(--text)", "stroke-width": 2, "marker-end": "url(#schwerpunktPfeil)" }, wurzel),
+    ist: svg("circle", { r: 6, fill: "var(--text)", stroke: "var(--flaeche)", "stroke-width": 2 }, wurzel),
+    soll: svg("circle", { r: 6, fill: "var(--flaeche)", stroke: "var(--text)", "stroke-width": 2.5, "stroke-dasharray": "3 2" }, wurzel)
+  };
+
+  // Eckpunkte und Werte des gerade bearbeiteten Stands
+  dia.punkte = {};
+  CONFIG.typen.forEach((typ) => {
+    const g = svg("g", {}, wurzel);
+    setzeTypfarbe(g, typ);
+    const c = svg("circle", { r: 8, fill: "var(--farbe)", stroke: "var(--text)", "stroke-width": 2 }, g);
+    const t = svgText(g, { class: "halo", "text-anchor": "middle", "dominant-baseline": "middle", "font-size": 17, "font-weight": 750 });
+    dia.punkte[typ.id] = { c, t, typ };
+  });
+}
+
+function aktualisiereDiagramm(werte) {
+  const aktiv = zustand.modus, anders = andererModus();
+  const punkteVon = (w) => ECKEN_REIHENFOLGE.map((ecke) => {
+    const typ = CONFIG.typen.find((t) => t.ecke === ecke);
+    return rautePunkt(ecke, w[typ.id]).map((z) => z.toFixed(1)).join(",");
+  }).join(" ");
+  const f = dia.flaeche;
+  ["ist", "soll"].forEach((m) => {
+    f[m].setAttribute("points", punkteVon(zustand[m]));
+    f[m].setAttribute("fill-opacity", m === aktiv ? "0.16" : "0.04");
+  });
+  f[aktiv].parentNode.insertBefore(f[aktiv], f[anders].nextSibling); // aktive Fläche nach vorne
+
+  Object.values(dia.punkte).forEach(({ c, t, typ }) => {
+    const v = werte[typ.id];
+    const [x, y] = rautePunkt(typ.ecke, v);
+    c.setAttribute("cx", x.toFixed(1)); c.setAttribute("cy", y.toFixed(1));
+    const [tx, ty] = rautePunkt(typ.ecke, v, 26);
+    t.setAttribute("x", tx.toFixed(1)); t.setAttribute("y", ty.toFixed(1));
+    t.textContent = v;
+  });
+
+  // Schwerpunkt je Stand: werte-gewichteter Mittelpunkt der vier Ecken.
+  // Gleich hohe Regler → Mitte; nur ein Regler hoch → dessen Ecke. Unabhängig vom Gesamtniveau.
+  const schwerpunkt = (w) => {
+    let summe = 0, x = 0, y = 0;
+    CONFIG.typen.forEach((t) => {
+      const [dx, dy] = RICHTUNG[t.ecke];
+      summe += w[t.id]; x += dx * w[t.id]; y += dy * w[t.id];
+    });
+    if (!summe) return null;
+    const r = D.R / Math.SQRT2;
+    return [D.mx + (x / summe) * r, D.my + (y / summe) * r];
+  };
+  const sp = dia.schwerpunkt;
+  const pIst = schwerpunkt(zustand.ist), pSoll = schwerpunkt(zustand.soll);
+  [["ist", pIst], ["soll", pSoll]].forEach(([m, pkt]) => {
+    sp[m].style.display = pkt ? "" : "none";
+    if (pkt) { sp[m].setAttribute("cx", pkt[0].toFixed(1)); sp[m].setAttribute("cy", pkt[1].toFixed(1)); }
+  });
+  const abstand = pIst && pSoll ? Math.hypot(pSoll[0] - pIst[0], pSoll[1] - pIst[1]) : 0;
+  sp.pfeil.style.display = abstand > 16 ? "" : "none";
+  if (abstand > 16) {
+    const ux = (pSoll[0] - pIst[0]) / abstand, uy = (pSoll[1] - pIst[1]) / abstand;
+    sp.pfeil.setAttribute("x1", (pIst[0] + ux * 8).toFixed(1)); sp.pfeil.setAttribute("y1", (pIst[1] + uy * 8).toFixed(1));
+    sp.pfeil.setAttribute("x2", (pSoll[0] - ux * 9).toFixed(1)); sp.pfeil.setAttribute("y2", (pSoll[1] - uy * 9).toFixed(1));
+  }
+  // Ist-Punkt über den Soll-Punkt legen, wenn Ist bearbeitet wird (und umgekehrt)
+  sp[aktiv].parentNode.insertBefore(sp[aktiv], sp[anders].nextSibling);
+
+  const neigung = (pkt) => {
+    if (!pkt) return "keine";
+    const teile = [];
+    if (pkt[1] < D.my - 8) teile.push("flexibel"); else if (pkt[1] > D.my + 8) teile.push("stabil");
+    if (pkt[0] < D.mx - 8) teile.push("intern"); else if (pkt[0] > D.mx + 8) teile.push("extern");
+    return teile.length ? "eher " + teile.join(" und ") : "ausgeglichen";
+  };
+  dia.titel.textContent = "Kulturprofil " + CONFIG.modi[aktiv].name + ": " +
+    CONFIG.typen.map((t) => t.name + " " + werte[t.id]).join(", ") +
+    ". Schwerpunkt Ist " + neigung(pIst) + ", Soll " + neigung(pSoll) + ".";
+
+  // Legende
+  const leg = $("#legende");
+  leg.textContent = "";
+  ["ist", "soll"].forEach((m) => {
+    const aktiv = m === zustand.modus;
+    const sp = element("span", aktiv ? "aktiv" : "inaktiv");
+    const muster = svg("svg", { viewBox: "0 0 34 12", "aria-hidden": "true" }, sp);
+    svg("line", { x1: 2, y1: 6, x2: 32, y2: 6, stroke: "var(--text)", "stroke-width": 3, "stroke-dasharray": m === "soll" ? "7 5" : "none" }, muster);
+    sp.appendChild(document.createTextNode(CONFIG.modi[m].lang));
+    if (aktiv) sp.appendChild(element("span", "nur-bildschirm", " – wird bearbeitet"));
+    leg.appendChild(sp);
+  });
+  // Legende Schwerpunkt
+  const spLeg = element("span");
+  const punkte = svg("svg", { viewBox: "0 0 34 12", "aria-hidden": "true" }, spLeg);
+  svg("circle", { cx: 7, cy: 6, r: 4.5, fill: "var(--text)" }, punkte);
+  svg("circle", { cx: 26, cy: 6, r: 4.5, fill: "none", stroke: "var(--text)", "stroke-width": 2, "stroke-dasharray": "2.5 1.5" }, punkte);
+  spLeg.appendChild(document.createTextNode("Schwerpunkt Ist / Soll"));
+  leg.appendChild(spLeg);
+}
+
+/* ---------- Auswertung anzeigen ---------- */
+function zeigeAuswertung(erg, box = $("#ebenen")) {
+  box.textContent = "";
+
+  const ebene = (nr, titel) => {
+    const e = element("div", "ebene");
+    e.appendChild(element("div", "ebene-nr", nr + " · " + titel));
+    box.appendChild(e);
+    return e;
+  };
+
+  const e1 = ebene(1, "Grundcharakter");
+  e1.appendChild(element("h3", null, erg.grundcharakter.titel));
+  if (erg.grundcharakter.zusatz) e1.appendChild(element("div", "zusatz", erg.grundcharakter.zusatz));
+  e1.appendChild(element("p", null, erg.grundcharakter.text));
+
+  const e2 = ebene(2, "Balance");
+  e2.appendChild(element("h3", null, erg.balance.titel));
+  e2.appendChild(element("p", null, erg.balance.text));
+
+  const e3 = ebene(3, "Gegenpole");
+  erg.spannungen.forEach((sp) => {
+    const eintrag = element("div", "eintrag");
+    eintrag.appendChild(element("strong", null, sp.titel));
+    if (sp.zitat) eintrag.appendChild(element("p", "zitat", "„" + sp.zitat + "“"));
+    eintrag.appendChild(element("p", null, sp.text));
+    e3.appendChild(eintrag);
+  });
+}
+
+/* ---------- Steckbrief ---------- */
+function zeigeSteckbrief(typ) {
+  const d = $("#steckbrief");
+  setzeTypfarbe(d, typ);
+  const h = $("#steckbriefName");
+  h.textContent = typ.name;
+  $("#steckbriefLage").textContent = CONFIG.lage[typ.ecke];
+  const dl = $("#steckbriefInhalt");
+  dl.textContent = "";
+  Object.entries(CONFIG.steckbriefTitel).forEach(([k, titel]) => {
+    if (!typ.steckbrief || !typ.steckbrief[k]) return;
+    dl.append(element("dt", null, titel), element("dd", null, typ.steckbrief[k]));
+  });
+  d.showModal();
+}
+
+/* ---------- Druckansicht: Ist und Soll nebeneinander ---------- */
+function baueDruckansicht() {
+  const box = $("#druck");
+  box.textContent = "";
+  box.appendChild(element("h2", null, "Ergebnis vom " + new Date().toLocaleDateString("de-AT")));
+
+  const tab = element("table", "druck-tabelle");
+  const kopfzeile = element("tr");
+  ["Typ", "Ist", "Soll", "Differenz", "Zustand Ist", "Zustand Soll"].forEach((t, i) => {
+    const th = element("th", i >= 1 && i <= 3 ? "zahl" : null, t); kopfzeile.appendChild(th);
+  });
+  tab.appendChild(kopfzeile);
+  CONFIG.typen.forEach((typ) => {
+    const ist = zustand.ist[typ.id], soll = zustand.soll[typ.id], diff = soll - ist;
+    const tr = element("tr");
+    setzeTypfarbe(tr, typ);
+    const zelle = (text, klasse) => tr.appendChild(element("td", klasse, text));
+    zelle(typ.name);
+    zelle(String(ist), "zahl");
+    zelle(String(soll), "zahl");
+    zelle((diff > 0 ? "+" : diff < 0 ? "−" : "±") + Math.abs(diff), "zahl");
+    zelle(CONFIG.zustaende[zustandVon(ist)].name);
+    zelle(CONFIG.zustaende[zustandVon(soll)].name);
+    tab.appendChild(tr);
+  });
+  box.appendChild(tab);
+
+  const beide = element("div", "druck-auswertungen");
+  ["ist", "soll"].forEach((m) => {
+    const spalte = element("div");
+    spalte.appendChild(element("h2", null, "Mischungsauswertung " + CONFIG.modi[m].lang));
+    const ebenen = element("div", "ebenen");
+    zeigeAuswertung(auswerten(zustand[m]), ebenen);
+    spalte.appendChild(ebenen);
+    beide.appendChild(spalte);
+  });
+  // Auswertungen nach der Raute ausgeben
+  $(".diagramm").after(beide);
+  dia.druckAuswertung = beide;
+}
+
+/* ---------- Thema ---------- */
+function istDunkel() {
+  if (zustand.thema) return zustand.thema === "dark";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+/* ---------- Alles neu zeichnen ---------- */
+let ansageTimer = null;
+
+function aktualisiere() {
+  const werte = zustand[zustand.modus];
+  const anderer = zustand[andererModus()];
+  const erg = auswerten(werte);
+
+  // Thema
+  if (zustand.thema) document.documentElement.dataset.theme = zustand.thema;
+  else delete document.documentElement.dataset.theme;
+  $("#themaKnopf").textContent = istDunkel() ? "☀ Hell" : "☾ Dunkel";
+
+  // Umschalter
+  document.querySelectorAll("[data-modus]").forEach((k) => k.setAttribute("aria-pressed", String(k.dataset.modus === zustand.modus)));
+  $("#kipp").dataset.stand = zustand.modus;
+
+  // Kanäle und Karten
+  CONFIG.typen.forEach((typ) => {
+    const v = werte[typ.id];
+    const z = CONFIG.zustaende[erg.zustaende[typ.id]];
+    const k = ui.kanaele[typ.id];
+    k.fader.style.setProperty("--pos", v / 100);
+    k.fader.style.setProperty("--geist", anderer[typ.id] / 100);
+    k.fader.setAttribute("aria-valuenow", v);
+    k.fader.setAttribute("aria-valuetext", v + ", " + z.name);
+    k.wert.textContent = v;
+    k.zst.textContent = z.symbol + " " + z.name;
+    k.geistText.textContent = CONFIG.modi[andererModus()].name + " " + anderer[typ.id];
+    // Marke ausblenden, wenn sie unter der Kappe verschwinden würde
+    const kappe = parseFloat(getComputedStyle(k.fader).getPropertyValue("--kappe")) || 34;
+    const abstandPx = (Math.abs(anderer[typ.id] - v) / 100) * (k.fader.clientHeight - kappe);
+    k.geist.classList.toggle("verdeckt", abstandPx < kappe / 2 + 2);
+
+    const b = ui.beschreibungen[typ.id];
+    b.praefix.textContent = z.praefix;
+    b.text.textContent = typ.texte[erg.zustaende[typ.id]];
+    const ist = zustand.ist[typ.id], soll = zustand.soll[typ.id], diff = soll - ist;
+    b.vergleich.textContent = "Ist " + ist + " → Soll " + soll + " (" + (diff > 0 ? "+" : diff < 0 ? "−" : "±") + Math.abs(diff) + ")";
+  });
+
+  aktualisiereDiagramm(werte);
+  zeigeAuswertung(erg);
+  speichern();
+
+  // Kurze Ansage für Screenreader, erst wenn das Schieben kurz ruht
+  clearTimeout(ansageTimer);
+  ansageTimer = setTimeout(() => {
+    $("#ansage").textContent = "Grundcharakter: " + erg.grundcharakter.titel + ". Balance: " + erg.balance.titel + ".";
+  }, 900);
+}
+
+/* ---------- Start ---------- */
+// Einbettungsmodus: Pult und Kulturprofil, nichts merken; Hell/Dunkel kommt von der einbettenden Seite
+const EINGEBETTET = new URLSearchParams(location.search).has("einbettung");
+if (EINGEBETTET) {
+  document.documentElement.classList.add("eingebettet");
+  CONFIG.merken = false;
+  window.addEventListener("message", (e) => {
+    if (e.data && (e.data.thema === "light" || e.data.thema === "dark" || e.data.thema === null)) {
+      zustand.thema = e.data.thema;
+      aktualisiere();
+    }
+  });
+}
+laden();
+baueOberflaeche();
+aktualisiere();
+
+/* Einbettung: Beschreibungen auf die Höhe des längsten Texts festlegen (damit sich die Größe beim Schieben
+   nicht ändert) und die ganze Seite in den Rahmen skalieren – Proportionen wie im Vollbild. */
+const EINBETT_BREITE = 1280;
+function fixiereBeschreibungen() {
+  let max = 0;
+  CONFIG.typen.forEach((typ) => {
+    const b = ui.beschreibungen[typ.id];
+    const box = b.text.closest(".beschreibung");
+    ["unter", "gut", "ueber"].forEach((z) => {
+      b.praefix.textContent = CONFIG.zustaende[z].praefix;
+      b.text.textContent = typ.texte[z];
+      max = Math.max(max, box.offsetHeight);
+    });
+  });
+  document.querySelectorAll(".beschreibung").forEach((el) => (el.style.minHeight = max + "px"));
+  aktualisiere(); // echte Texte wieder einsetzen
+}
+function skaliereEinbettung() {
+  const seite = $("#seite");
+  const s = Math.min(innerWidth / EINBETT_BREITE, innerHeight / seite.offsetHeight);
+  const x = Math.max(0, (innerWidth - EINBETT_BREITE * s) / 2);
+  seite.style.transform = `translate(${x}px, 0) scale(${s})`;
+}
+if (EINGEBETTET) {
+  fixiereBeschreibungen();
+  skaliereEinbettung();
+  window.addEventListener("resize", skaliereEinbettung);
+}
+window.addEventListener("resize", aktualisiere); // Fader-Höhe ändert sich → Verdeckung der Marke neu prüfen
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (!zustand.thema) aktualisiere(); });
+</script>
+</body>
+</html>
