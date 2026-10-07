@@ -137,6 +137,10 @@ button, input { font: inherit; color: inherit; }
 @media (min-width: 1700px) {
   .buehne { grid-template-columns: minmax(0, 2.3fr) minmax(280px, 0.8fr) minmax(340px, 1fr); gap: 1.25rem; }
 }
+/* Ohne Auswertung (Standard; eingeblendet mit index.html?auswertung): nur Pult und Kulturprofil */
+.ohne-auswertung .auswertung { display: none; }
+@media (min-width: 1000px) { .ohne-auswertung .buehne { grid-template-columns: minmax(0, 1.9fr) minmax(280px, 0.85fr); } }
+@media (min-width: 1700px) { .ohne-auswertung .buehne { grid-template-columns: minmax(0, 2.3fr) minmax(340px, 1fr); } }
 /* Schmale Kanäle: Skalenzahlen und Beschriftung der Marke ausblenden, Kappe schmaler */
 @container (max-width: 120px) {
   .kanal .fader-skala, .kanal .fader-geist span { display: none; }
@@ -1218,6 +1222,7 @@ function baueDruckansicht() {
     tab.appendChild(tr);
   });
   box.appendChild(tab);
+  if (!MIT_AUSWERTUNG) return;
 
   const beide = element("div", "druck-auswertungen");
   ["ist", "soll"].forEach((m) => {
@@ -1281,17 +1286,21 @@ function aktualisiere() {
   });
 
   aktualisiereDiagramm(werte);
-  zeigeAuswertung(erg);
+  if (MIT_AUSWERTUNG) zeigeAuswertung(erg);
   speichern();
 
   // Kurze Ansage für Screenreader, erst wenn das Schieben kurz ruht
   clearTimeout(ansageTimer);
-  ansageTimer = setTimeout(() => {
+  if (MIT_AUSWERTUNG) ansageTimer = setTimeout(() => {
     $("#ansage").textContent = "Grundcharakter: " + erg.grundcharakter.titel + ". Balance: " + erg.balance.titel + ".";
   }, 900);
 }
 
 /* ---------- Start ---------- */
+// Mischungsauswertung nur mit index.html?auswertung (bzw. auswertung.html); öffentlich ohne
+const MIT_AUSWERTUNG = new URLSearchParams(location.search).has("auswertung");
+if (!MIT_AUSWERTUNG) document.documentElement.classList.add("ohne-auswertung");
+
 // Einbettungsmodus: Pult und Kulturprofil, nichts merken; Hell/Dunkel kommt von der einbettenden Seite
 const EINGEBETTET = new URLSearchParams(location.search).has("einbettung");
 if (EINGEBETTET) {
