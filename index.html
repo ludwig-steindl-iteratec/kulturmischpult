@@ -1005,7 +1005,7 @@ const rautePunkt = (ecke, wert, extra = 0) => {
 function baueDiagramm() {
   const s = CONFIG.schwellen;
   const { mx, my, kasten: k } = D;
-  const wurzel = svg("svg", { viewBox: "100 62 280 350", role: "img" });
+  const wurzel = svg("svg", { viewBox: "100 72 280 348", role: "img" });
   dia.titel = svg("title", {}, wurzel);
   $("#diagramm").appendChild(wurzel);
 
@@ -1034,11 +1034,14 @@ function baueDiagramm() {
     const [dx, dy] = RICHTUNG[typ.ecke];
     const x = dx < 0 ? mx - k : mx + k;
     const anker = dx < 0 ? "start" : "end";
-    const yName = dy < 0 ? my - k - 30 : my + k + 26;
+    // Balken außen bündig an der Kante, Name mit gleichem sichtbarem Abstand dazu: oben ab der Grundlinie,
+    // unten ab der Oberkante der Großbuchstaben (≈ 13 px bei 17 px Schrift)
+    const yBalken = dy < 0 ? my - k - 6 : my + k;
+    const yName = dy < 0 ? yBalken - 16 : yBalken + 6 + 16 + 13;
     const g = svg("g", {}, wurzel);
     setzeTypfarbe(g, typ);
     svgText(g, { x, y: yName, "text-anchor": anker, "font-size": 17, "font-weight": 750 }, typ.name);
-    svg("rect", { x: dx < 0 ? x : x - 30, y: yName + (dy < 0 ? 24 : -28), width: 30, height: 6, rx: 3, fill: "var(--farbe)" }, g);
+    svg("rect", { x: dx < 0 ? x : x - 30, y: yBalken, width: 30, height: 6, rx: 3, fill: "var(--farbe)" }, g);
   });
 
   // Flächen für Ist (durchgezogen) und Soll (gestrichelt)
