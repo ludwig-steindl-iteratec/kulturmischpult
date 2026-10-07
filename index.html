@@ -1291,6 +1291,7 @@ function aktualisiere() {
   aktualisiereDiagramm(werte);
   if (MIT_AUSWERTUNG) zeigeAuswertung(erg);
   speichern();
+  if (EINGEBETTET) meldeWerte();
 
   // Kurze Ansage für Screenreader, erst wenn das Schieben kurz ruht
   clearTimeout(ansageTimer);
@@ -1304,21 +1305,43 @@ function aktualisiere() {
 const MIT_AUSWERTUNG = new URLSearchParams(location.search).has("auswertung");
 if (!MIT_AUSWERTUNG) document.documentElement.classList.add("ohne-auswertung");
 
-// Einbettungsmodus: Pult und Kulturprofil, nichts merken; Hell/Dunkel kommt von der einbettenden Seite
+// Einbettungsmodus: Pult und Kulturprofil, nichts merken; Hell/Dunkel kommt von der einbettenden Seite.
+// Die einbettende Seite kann Werte setzen ({ werte: { ist, soll }, modus }) und bekommt jede Änderung
+// durch Bedienung gemeldet ({ kulturmischpult: "werte", ist, soll }); nach dem Start kommt { kulturmischpult: "bereit" }.
 const EINGEBETTET = new URLSearchParams(location.search).has("einbettung");
+let gemeldet = null; // zuletzt gemeldeter oder von außen gesetzter Stand – verhindert Echos und Meldungen bei Resize/Thema
+const standJson = () => JSON.stringify({ ist: zustand.ist, soll: zustand.soll });
+function meldeWerte() {
+  const jetzt = standJson();
+  if (jetzt === gemeldet) return;
+  gemeldet = jetzt;
+  parent.postMessage({ kulturmischpult: "werte", ist: { ...zustand.ist }, soll: { ...zustand.soll } }, "*");
+}
 if (EINGEBETTET) {
   document.documentElement.classList.add("eingebettet");
   CONFIG.merken = false;
   window.addEventListener("message", (e) => {
-    if (e.data && (e.data.thema === "light" || e.data.thema === "dark" || e.data.thema === null)) {
-      zustand.thema = e.data.thema;
+    const d = e.data;
+    if (!d || typeof d !== "object") return;
+    if (d.thema === "light" || d.thema === "dark" || d.thema === null) {
+      zustand.thema = d.thema;
+      aktualisiere();
+    }
+    if (d.werte) {
+      ["ist", "soll"].forEach((m) => {
+        if (d.werte[m]) CONFIG.typen.forEach((t) => { if (t.id in d.werte[m]) zustand[m][t.id] = klemme(d.werte[m][t.id]); });
+      });
+      if (d.modus === "ist" || d.modus === "soll") zustand.modus = d.modus;
+      gemeldet = standJson();
       aktualisiere();
     }
   });
 }
 laden();
 baueOberflaeche();
+if (EINGEBETTET) gemeldet = standJson();
 aktualisiere();
+if (EINGEBETTET) parent.postMessage({ kulturmischpult: "bereit" }, "*");
 
 /* Einbettung: Beschreibungen auf die Höhe des längsten Texts festlegen (damit sich die Größe beim Schieben
    nicht ändert) und die ganze Seite in den Rahmen skalieren – Proportionen wie im Vollbild. */

@@ -34,7 +34,18 @@ Das Repo ist öffentlich – die Variante mit Auswertung ist nicht geheim, nur n
 
 ## Einbetten
 
-Mit `index.html?einbettung` zeigt die Seite nur Pult und Kulturprofil, ohne Kopf, Auswertung und Speichern, und skaliert sich als Ganzes in den Rahmen – gedacht für ein `<iframe>`, z. B. in den Einführungsfolien. Hell/Dunkel übernimmt sie per `postMessage({ thema: "light" | "dark" | null })` von der einbettenden Seite.
+Mit `index.html?einbettung` zeigt die Seite nur Pult und Kulturprofil, ohne Kopf, Auswertung und Speichern, und skaliert sich als Ganzes in den Rahmen – gedacht für ein `<iframe>`, z. B. in den Einführungsfolien.
+
+Nachrichten per `postMessage` (Zielursprung `"*"`, damit es auch mit lokal geöffneten Dateien funktioniert):
+
+| Richtung | Nachricht | Wirkung |
+| --- | --- | --- |
+| Seite → Mischpult | `{ thema: "light" \| "dark" \| null }` | Hell/Dunkel übernehmen |
+| Seite → Mischpult | `{ werte: { ist: {…}, soll: {…} }, modus: "ist" \| "soll" }` | Ist, Soll und Modus setzen (ohne Rückmeldung) |
+| Mischpult → Seite | `{ kulturmischpult: "bereit" }` | einmal nach dem Start |
+| Mischpult → Seite | `{ kulturmischpult: "werte", ist: {…}, soll: {…} }` | nach jeder Änderung durch Bedienung |
+
+Werte sind Objekte `{ clan, adhocracy, market, hierarchy }` mit ganzen Zahlen von 0 bis 100.
 
 ## Texte und Werte anpassen
 
